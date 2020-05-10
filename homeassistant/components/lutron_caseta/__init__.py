@@ -2,11 +2,8 @@
 import logging
 
 from pylutron_caseta.smartbridge import Smartbridge
-import voluptuous as vol
 
-from homeassistant import config_entries
 from homeassistant.const import CONF_HOST
-import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity
 
 from .const import CONF_CA_CERTS, CONF_CERTFILE, CONF_KEYFILE
@@ -16,50 +13,13 @@ _LOGGER = logging.getLogger(__name__)
 DOMAIN = "lutron_caseta"
 DATA_BRIDGE_CONFIG = "lutron_caseta_bridges"
 
-CONFIG_SCHEMA = vol.Schema(
-    {
-        DOMAIN: vol.All(
-            cv.ensure_list,
-            [
-                {
-                    vol.Required(CONF_HOST): cv.string,
-                    vol.Required(CONF_KEYFILE): cv.string,
-                    vol.Required(CONF_CERTFILE): cv.string,
-                    vol.Required(CONF_CA_CERTS): cv.string,
-                }
-            ],
-        )
-    },
-    extra=vol.ALLOW_EXTRA,
-)
-
 LUTRON_CASETA_COMPONENTS = ["light", "switch", "cover", "scene", "fan", "binary_sensor"]
 
 
 async def async_setup(hass, base_config):
     """Set up the Lutron component."""
 
-    bridge_configs = base_config.get(DOMAIN)
-
-    if not bridge_configs:
-        return True
-
     hass.data.setdefault(DOMAIN, {})
-
-    for config in bridge_configs:
-        hass.async_create_task(
-            hass.config_entries.flow.async_init(
-                DOMAIN,
-                context={"source": config_entries.SOURCE_IMPORT},
-                # extract the config keys one-by-one just to be explicit
-                data={
-                    CONF_HOST: config[CONF_HOST],
-                    CONF_KEYFILE: config[CONF_KEYFILE],
-                    CONF_CERTFILE: config[CONF_CERTFILE],
-                    CONF_CA_CERTS: config[CONF_CA_CERTS],
-                },
-            )
-        )
 
     return True
 
